@@ -39,16 +39,65 @@ public class SystemCalls {
 	        return scanner.nextLine();
 	    }
 
-	    public String readMemory(int processId, int address) {
-	        // Read data from memory for the given processId and address
-	        return null;
+	    public String readMemory(int processID, int address) throws FileNotFoundException {
+	    	File file = new File("src/text/disk.txt");
+	        StringBuilder data = new StringBuilder();
+
+	        Scanner scanner = new Scanner(file);
+	        boolean isTargetProcess = false;
+
+	        while (scanner.hasNextLine()) {
+	            String line = scanner.nextLine();
+	            if (line.startsWith("Process ID:")) {
+	                int id = Integer.parseInt(line.split(":")[1].trim());
+	                isTargetProcess = (id == processID);
+	            } else if (isTargetProcess && line.startsWith(address + ":")) {
+	                data.append(line.substring(line.indexOf(":") + 1).trim());
+	                break; // Found the desired address, so exit the loop
+	            }
+	        }
+
+	        scanner.close();
+	        return data.toString();
+	    }
+	    
+
+	    public void writeMemory(int processId, String data) {
+	        try {
+	            File file = new File("src/text/disk.txt");
+	            FileWriter writer = new FileWriter(file, true);
+
+	            // Find the line that corresponds to the specified process ID
+	            Scanner scanner = new Scanner(file);
+	            boolean isTargetProcess = false;
+	            int address = 1;
+
+	            while (scanner.hasNextLine()) {
+	                String line = scanner.nextLine();
+	                if (line.startsWith("Process ID:")) {
+	                    int id = Integer.parseInt(line.split(":")[1].trim());
+	                    isTargetProcess = (id == processId);
+	                } else if (isTargetProcess) {
+	                    // Write the specified data to the line
+	                    line = line.substring(0, line.indexOf(":")) + data;
+	                    writer.write(line);
+	                    address++;
+	                    break; // Found the desired address, so exit the loop
+	                }
+	            }
+
+	            scanner.close();
+	            writer.close();
+	        } catch (IOException e) {
+	            System.out.println("writemem");
+	            e.printStackTrace();
+	        }
 	    }
 
-	    public void writeMemory(int processId, int address, String data) {
-	        // Write data to memory for the given processId and address
-	    }
+
 	    public static void main(String[] args) throws IOException {
 			SystemCalls hassan = new SystemCalls();
+			hassan.writeMemory(1, "hiuhiuhi");
 			
 		}
 }

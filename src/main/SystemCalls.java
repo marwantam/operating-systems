@@ -1,6 +1,8 @@
 package main;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -63,36 +65,38 @@ public class SystemCalls {
 	    
 
 	    public void writeMemory(int processId, String data) {
-	        try {
-	            File file = new File("src/text/disk.txt");
-	            FileWriter writer = new FileWriter(file, true);
+            try {
+                File file = new File("src/text/disk.txt");
+                FileWriter writer = new FileWriter(file, true);
 
-	            // Find the line that corresponds to the specified process ID
-	            Scanner scanner = new Scanner(file);
-	            boolean isTargetProcess = false;
-	            int address = 1;
+                // Find the line that corresponds to the specified process ID
+                Scanner scanner = new Scanner(file);
+                boolean isTargetProcess = false;
+                int address = 1;
 
-	            while (scanner.hasNextLine()) {
-	                String line = scanner.nextLine();
-	                if (line.startsWith("Process ID:")) {
-	                    int id = Integer.parseInt(line.split(":")[1].trim());
-	                    isTargetProcess = (id == processId);
-	                } else if (isTargetProcess) {
-	                    // Write the specified data to the line
-	                    line = line.substring(0, line.indexOf(":")) + data;
-	                    writer.write(line);
-	                    address++;
-	                    break; // Found the desired address, so exit the loop
-	                }
-	            }
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.startsWith("Process ID:")) {
+                        int id = Integer.parseInt(line.split(":")[1].trim());
+                        isTargetProcess = (id == processId);
+                    } else if (isTargetProcess) {
+                         address++;
+                        // Write the specified data to the line
+                        writer.write("\n");
+                        line = address + ": "+ line.substring(0, line.indexOf(":")) + data;
+                        writer.write(line);
 
-	            scanner.close();
-	            writer.close();
-	        } catch (IOException e) {
-	            System.out.println("writemem");
-	            e.printStackTrace();
-	        }
-	    }
+                        break; // Found the desired address, so exit the loop
+                    }
+                }
+
+                scanner.close();
+                writer.close();
+            } catch (IOException e) {
+                System.out.println("writemem");
+                e.printStackTrace();
+            }
+        }
 
 
 	    public static void main(String[] args) throws IOException {

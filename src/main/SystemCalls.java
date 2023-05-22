@@ -12,37 +12,26 @@ import java.io.IOException;
 public class SystemCalls {
 	
 	
-	  public String readFile(String filename) throws FileNotFoundException {
-	        File file = new File(filename);
-	        StringBuilder fileData = new StringBuilder();
-	        Scanner scanner = new Scanner(file);
-
-	        while (scanner.hasNextLine()) {
-	            fileData.append(scanner.nextLine()).append("\n");
-	        }
-
-	        scanner.close();
-	        return fileData.toString();
-	    }
-
-	    public void writeFile(String filename, String data) throws IOException {
-	        FileWriter writer = new FileWriter(filename);
-	        writer.write(data);
-	        writer.close();
-	    }
-
+		public ArrayList<Object> readMem(Object[] memory,Process p) {
+			ArrayList<Object> res = new ArrayList<>();
+			for(int i = p.getPcb().getMemoryBoundaries()[0];i<p.getPcb().getMemoryBoundaries()[1];i++) {
+				res.add(memory[i]);
+			}
+			return res;
+		}
+		public void writeMem(Object[] memory, int index , Object data) {
+			memory[index] = data;
+		}
 	    public void printOutput(String data) {
 	        System.out.println(data);
 	    }
-
 	    public String takeInput() {
 	        Scanner scanner = new Scanner(System.in);
 	        System.out.print("Please enter a value: ");
 	        return scanner.nextLine();
 	    }
-
-	    public String readMemory(int processID, int address) throws FileNotFoundException {
-	    	File file = new File("src/text/disk.txt");
+	    public String readDisk(int processID) throws FileNotFoundException {
+	        File file = new File("src/text/disk.txt");
 	        StringBuilder data = new StringBuilder();
 
 	        Scanner scanner = new Scanner(file);
@@ -52,57 +41,62 @@ public class SystemCalls {
 	            String line = scanner.nextLine();
 	            if (line.startsWith("Process ID:")) {
 	                int id = Integer.parseInt(line.split(":")[1].trim());
+	                if (isTargetProcess) {
+	                    // Next process ID encountered, exit the loop
+	                    break;
+	                }
 	                isTargetProcess = (id == processID);
-	            } else if (isTargetProcess && line.startsWith(address + ":")) {
-	                data.append(line.substring(line.indexOf(":") + 1).trim());
-	                break; // Found the desired address, so exit the loop
+	            } else if (isTargetProcess) {
+	                // Append the line to the data
+	                data.append(line).append("\n");
 	            }
 	        }
 
-	        scanner.close();
 	        return data.toString();
 	    }
-	    
+	    public void writeDisk(int processID, String data) throws IOException {
+	        File file = new File("src/text/disk.txt");
+	        StringBuilder diskData = new StringBuilder();
+	        boolean isTargetProcess = false;
 
-	    public void writeMemory(int processId, String data) {
-            try {
-                File file = new File("src/text/disk.txt");
-                FileWriter writer = new FileWriter(file, true);
+	        if (file.exists()) {
+	            // Read the existing data from the file
+	            Scanner scanner = new Scanner(file);
 
-                // Find the line that corresponds to the specified process ID
-                Scanner scanner = new Scanner(file);
-                boolean isTargetProcess = false;
-                int address = 1;
+	            while (scanner.hasNextLine()) {
+	                String line = scanner.nextLine();
+	                if (line.startsWith("Process ID:")) {
+	                    int id = Integer.parseInt(line.split(":")[1].trim());
+	                    if (isTargetProcess) {
+	                        // Append the new data to the existing data
+	                        diskData.append(data).append("\n");
+	                        isTargetProcess = false;
+	                    }
+	                    if (id == processID) {
+	                        isTargetProcess = true;
+	                    }
+	                }
+	                diskData.append(line).append("\n");
+	            }
+	            scanner.close();
+	        }
 
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if (line.startsWith("Process ID:")) {
-                        int id = Integer.parseInt(line.split(":")[1].trim());
-                        isTargetProcess = (id == processId);
-                    } else if (isTargetProcess) {
-                         address++;
-                        // Write the specified data to the line
-                        writer.write("\n");
-                        line = address + ": "+ line.substring(0, line.indexOf(":")) + data;
-                        writer.write(line);
+	        // If the target process ID is not found in the existing data, append the new data at the end
+	        if (!isTargetProcess) {
+	            diskData.append("Process ID: ").append(processID).append("\n");
+	            diskData.append(data).append("\n");
+	        }
 
-                        break; // Found the desired address, so exit the loop
-                    }
-                }
-
-                scanner.close();
-                writer.close();
-            } catch (IOException e) {
-                System.out.println("writemem");
-                e.printStackTrace();
-            }
-        }
-
+	        // Write the modified data back to the file
+	        FileWriter writer = new FileWriter(file);
+	        writer.write(diskData.toString());
+	        writer.close();
+	    }
 
 	    public static void main(String[] args) throws IOException {
 			SystemCalls hassan = new SystemCalls();
-			hassan.writeMemory(1, "hiuhiuhi");
-			
+			hassan.writeDisk(2, "marwan");
+			System.out.println(hassan.readDisk(2));
 		}
 }
 

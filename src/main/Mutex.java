@@ -9,7 +9,7 @@ public class Mutex {
     private boolean isLocked = false;
     private Queue<PCB> blockedQueue = new LinkedList<>();
 
-    public synchronized void acquire(PCB process) throws InterruptedException {
+    public synchronized void semWait(PCB process) throws InterruptedException {
         while (isLocked) {
             blockedQueue.add(process);
             try {
@@ -21,7 +21,7 @@ public class Mutex {
         isLocked = true;
     }
 
-    public synchronized void release() {
+    public synchronized void semSignal() {
         isLocked = false;
         notify();
         if (!blockedQueue.isEmpty()) {

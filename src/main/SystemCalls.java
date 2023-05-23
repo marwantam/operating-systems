@@ -58,7 +58,9 @@ public class SystemCalls {
 	}
 
 	public void writeMem(Object[] memory, PCB process, Object data, String var) {
-		// WRITE TO DESIGNATED SLOT
+		for(int i = process.getMemoryBoundaries()[0]+4;i<process.getMemoryBoundaries()[1];i++) {
+			//hgfdfgfdfgfdfgfdsdfhjhgf
+		}
 	}
 
 	public void printOutput(String data) {
